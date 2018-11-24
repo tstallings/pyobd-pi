@@ -7,8 +7,9 @@
 ###########################################################################
 from obd_capture import OBD_Capture
 from threading import Thread
-import wx
+import logging
 import time
+import wx
 
 # OBD variables
 BACKGROUND_FILENAME = "bg_black.jpg"
@@ -25,12 +26,15 @@ class OBDConnection(object):
     """
 
     def __init__(self):
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger.debug("Initializing OBD connection for capture")
         self.c = OBD_Capture()
 
     def get_capture(self):
         return self.c
 
     def connect(self):
+        self.logger.debug("Starting new connection thread")
         self.t = Thread(target=obd_connect, args=(self.c,))
         self.t.start()
 
@@ -112,6 +116,8 @@ class OBDPanelGauges(wx.Panel):
         Constructor.
         """
         super(OBDPanelGauges, self).__init__(*args, **kwargs)
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger.debug("Initializing panel guages")
 
         # Background image
         image = wx.Image(BACKGROUND_FILENAME)
@@ -151,6 +157,7 @@ class OBDPanelGauges(wx.Panel):
         # List to hold children widgets
         self.boxes = []
         self.texts = []
+        self.logger.debug("Guage panel initialized")
 
     def setConnection(self, connection):
         self.connection = connection
@@ -609,6 +616,16 @@ class OBDApp(wx.App):
 
 
 if __name__ == '__main__':
-
-    app = OBDApp(False)
-    app.MainLoop()
+    logging.basicConfig(level=logging.DEBUG)
+    logger = logging.getLogger(__name__)
+    logger.debug("Initializing app...")
+    try:
+        app = OBDApp(False)
+        app.MainLoop()
+    except Exception as e:
+        logger.exception(
+            "Caught unhandled exception - [{}]: {}".format(
+                e.__class__.__name__,
+                str(e)
+            )
+        )
