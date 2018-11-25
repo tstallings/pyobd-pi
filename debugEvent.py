@@ -21,6 +21,8 @@
 # along with pyOBD; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ###########################################################################
+import logging
+logger = logging.getLogger("DebugWindow")
 try:
     import wx
 
@@ -28,7 +30,7 @@ try:
 
     def debug_display(window, position, message):
         if window is None:
-            print message
+            logger.debug(message)
         else:
             wx.PostEvent(window, DebugEvent([position, message]))
 
@@ -39,6 +41,14 @@ try:
             wx.PyEvent.__init__(self)
             self.SetEventType(EVT_DEBUG_ID)
             self.data = data
+
 except ImportError as e:
+    logger.error(
+        "Failed to import wx - [{}]: {}".format(
+            e.__class__.__name__,
+            str(e)
+        )
+    )
+
     def debug_display(window, position, message):
-        print message
+        logger.debug(message)

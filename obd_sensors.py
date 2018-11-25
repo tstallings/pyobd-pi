@@ -23,8 +23,8 @@
 ###########################################################################
 
 
-def hex_to_int(str):
-    return int(str, 16)
+def hex_to_int(text):
+    return int(text, 16)
 
 
 def maf(code):
@@ -121,9 +121,9 @@ def dtc_decrypt(code):
     return "#"
 
 
-def hex_to_bitstring(str):
+def hex_to_bitstring(text):
     bitstring = ""
-    for i in str:
+    for i in text:
         if isinstance(i, str):
             v = hex_to_int(i)
             if v & 8:

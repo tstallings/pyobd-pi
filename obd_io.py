@@ -28,6 +28,7 @@ import serial
 import string
 import time
 import obd_sensors
+import logging
 
 GET_DTC_COMMAND = "03"
 CLEAR_DTC_COMMAND = "04"
@@ -69,6 +70,8 @@ class OBDPort:
     def __init__(self, portnum, _notify_window, SERTIMEOUT, RECONNATTEMPTS):
         """Initializes port by resetting device and gettings supported PIDs. """
         # These should really be set by the user.
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger.debug("Initializing OBD Port...")
         baud = 38400
         databits = 8
         par = serial.PARITY_NONE  # parity
@@ -92,7 +95,12 @@ class OBDPort:
             )
 
         except serial.SerialException as e:
-            print e
+            self.logger.exception(
+                "Failed to connect to port - [{}]: {}".format(
+                    e.__class__.__name__,
+                    str(e)
+                )
+            )
             self.State = 0
             return None
 
@@ -161,7 +169,7 @@ class OBDPort:
         # 9 seems to be the length of the shortest valid response
         if len(code) < 7:
             # raise Exception("BogusCode")
-            print "boguscode?"+code
+            self.logger.warning("boguscode? - {}".format(code))
 
         # get the first thing returned, echo should be off
         code = string.split(code, "\r")
@@ -189,7 +197,7 @@ class OBDPort:
                 if len(c) == 0:
                     if(repeat_count == 5):
                         break
-                    print "Got nothing\n"
+                    self.logger.debug("Got nothing")
                     repeat_count = repeat_count + 1
                     continue
 
@@ -276,12 +284,17 @@ class OBDPort:
         mil = r[1]
         DTCCodes = []
 
-        print "Number of stored DTC:" + str(dtcNumber) + " MIL: " + str(mil)
+        self.logger.debug(
+            "Number of stored DTC: {} MIL: {}".format(
+                dtcNumber,
+                mil
+            )
+        )
         # get all DTC, 3 per mesg response
         for i in range(0, ((dtcNumber+2)/3)):
             self.send_command(GET_DTC_COMMAND)
             res = self.get_result()
-            print "DTC result:" + res
+            self.logger.debug("DTC result: {}".format(res))
             for i in range(0, 3):
                 # get DTC codes from response (3 DTC each 2 bytes)
                 val1 = hex_to_int(res[3 + i * 6:5 + i * 6])
@@ -310,7 +323,7 @@ class OBDPort:
         if res[:7] == "NODATA":  # no freeze frame
             return DTCCodes
 
-        print "DTC freeze result:" + res
+        self.logger.debug("DTC freeze result: {}".format(res))
         for i in range(0, 3):
             # get DTC codes from response (3 DTC each 2 bytes)
             val1 = hex_to_int(res[3 + i * 6:5 + i * 6])

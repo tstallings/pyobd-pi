@@ -575,7 +575,6 @@ class OBDApp(wx.App):
         Constructor.
         """
         super(OBDApp, self).__init__(
-            self,
             redirect,
             filename,
             useBestVisual,
