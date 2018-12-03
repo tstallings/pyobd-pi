@@ -212,7 +212,7 @@ class OBDPanelGauges(wx.Panel):
 
             # Text for sensor value
             if type(value) == float:
-                value = str("%.2f" % round(value, 3))
+                value = "{0:.2f}".format(round(value, 3))
 
             t1 = wx.StaticText(
                 parent=self,
@@ -281,7 +281,7 @@ class OBDPanelGauges(wx.Panel):
 
             (name, value, unit) = self.port.sensor(index)
             if isinstance(value, float):
-                value = str("%.2f".format(round(value, 3)))
+                value = str("{0:.2f}".format(round(value, 3)))
 
             if itext < len(self.texts):
                 self.texts[itext * 2].SetLabel(str(value))
